@@ -1,0 +1,5 @@
+{
+  "vaultRoot": "~/Documents/ethans-vault/",
+  "vaultDirectory": "~/Documents/ethans-vault/ethans-blog/",
+  "outDirectory": "./output"
+}
