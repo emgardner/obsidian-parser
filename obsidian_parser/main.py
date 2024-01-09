@@ -3,16 +3,23 @@ from pathlib import Path
 import marko
 import shutil
 import re
-from parser_extensions import create_extension
+from parser_extensions import ObsidianRenderer, create_extension, ObsidianExtension
 from helpers import slugify_filename
 from settings import Settings, parse_settings
 
 
 def update_links(settings: Settings, filepath: str):
-    print(filepath)
+    ObsidianRenderer.file_data = {
+        "settings": Settings,
+        "source_path": filepath,
+        "target_path": filepath,
+    }
     _mdParser = marko.Markdown(
-        renderer=marko.md_renderer.MarkdownRenderer,
+        #renderer=marko.md_renderer.MarkdownRenderer,
+        #renderer=ObsidianRenderer(settings, filepath, filepath),
+        renderer=ObsidianRenderer,
         extensions=[create_extension(settings, filepath, filepath)],
+        #extensions=[ObsidianExtension()],
     )
     content = ""
     with open(filepath) as f:
@@ -63,5 +70,6 @@ def get_files(settings: Settings):
 
 
 if __name__ == "__main__":
-    settings = parse_settings("./settings.json")
+    #settings = parse_settings("./settings.json")
+    settings = parse_settings("./settings.dev.json")
     get_files(settings)
