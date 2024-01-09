@@ -5,6 +5,7 @@ from marko.block import BlockElement
 from marko.inline import InlineElement
 from marko.helpers import MarkoExtension
 import re
+from helpers import slugify_filename
 
 
 class ObsidianWiki(InlineElement):
@@ -19,10 +20,24 @@ class ObsidianWiki(InlineElement):
 
 
 class ObsidianWikiRenderer(object):
+    def __init__(self, settings, source_path, target_path, *args, **kwargs):
+        # def __init__(self, *args, **kwargs):
+        # print(*args)
+        # print(**kwargs)
+        print(f" Args: {args}")
+        print(f" Kwargs: {kwargs}")
+        # super().__init__(*args, **kwargs)
+        # self._settings = settings
+        # self._source_path = source_path
+        # self._target_path = target_path
+        self._settings = kwargs["settings"]
+        self._source_path = kwargs["source_path"]
+        self._target_path = kwargs["target_path"]
+
     def render_obsidian_wiki(self, element):
-        print(element)
-        print(dir(element))
-        print(element.target)
+        print(self._settings)
+        print(self._source_path)
+        print(self._target_path)
         return "[{}]({})".format(element.target, element.target)
 
 
@@ -33,12 +48,19 @@ class ObsidianImage(InlineElement):
     parse_children = True
 
     def __init__(self, match):
-        # print("Ob Link: ", match)
         self.target = match.group(1)
 
 
 class ObsidianImageRenderer(object):
+    def __init__(self, settings, source_path, target_path):
+        self._settings = settings
+        self._source_path = source_path
+        self._target_path = target_path
+
     def render_obsidian_wiki(self, element):
+        print(self._settings)
+        print(self._source_path)
+        print(self._target_path)
         return "[{}]({})".format(element.target, element.target)
 
 
@@ -90,7 +112,28 @@ class FrontMatterRenderer(object):
         return "---\n{}---\n".format(element.content)
 
 
-FrontMatterExtension = MarkoExtension(
-    elements=[FrontMatter, ObsidianWiki],
-    renderer_mixins=[FrontMatterRenderer, ObsidianWikiRenderer],
-)
+# class ObsidianExtension(mark.ext.Extension):
+#    elements = [FrontMatter, ObsidianWiki, ObsidianImage]
+#
+#    def extend(self, parser):
+#        parser.inline_parsers.insert(0, CustomInlineParser())
+#        parser.inline_parsers.insert(0, CustomInlineParser())
+
+
+def create_extension(settings, source_path, target_path):
+    return MarkoExtension(
+        elements=[
+            FrontMatter,
+            ObsidianWiki,
+            # ObsidianImage
+        ],
+        renderer_mixins=[
+            FrontMatterRenderer,
+            ObsidianWikiRenderer(
+                settings=settings, source_path=source_path, target_path=target_path
+            ),
+            # ObsidianWikiRenderer,
+            # ObsidianWikiRenderer,
+            # ObsidianImageRenderer(settings, source_path, target_path),
+        ],
+    )

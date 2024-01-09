@@ -1,31 +1,18 @@
 import os
-import json
-from dataclasses import dataclass
 from pathlib import Path
 import marko
 import shutil
 import re
-from parser_extensions import FrontMatterExtension
+from parser_extensions import create_extension
 from helpers import slugify_filename
+from settings import Settings, parse_settings
 
 
-@dataclass
-class Settings:
-    vaultRoot: str
-    vaultDirectory: str
-    outDirectory: str
-
-
-def parse_settings(file: str):
-    with open(file) as f:
-        settings = json.loads(f.read())
-        return Settings(**settings)
-
-
-def update_links(filepath: str):
+def update_links(settings: Settings, filepath: str):
     print(filepath)
     _mdParser = marko.Markdown(
-        renderer=marko.md_renderer.MarkdownRenderer, extensions=[FrontMatterExtension]
+        renderer=marko.md_renderer.MarkdownRenderer,
+        extensions=[create_extension(settings, filepath, filepath)],
     )
     content = ""
     with open(filepath) as f:
@@ -41,7 +28,7 @@ def process_file(settings, file_path):
         os.path.expanduser(os.path.expandvars(settings.outDirectory))
     )
     fp = os.path.split(file_path)
-    new_dir_name = sluggify_filename(fp[1].split(".")[0])
+    new_dir_name = slugify_filename(fp[1].split(".")[0])
     new_dir = output + "/" + new_dir_name
     if os.path.exists(new_dir):
         pass
@@ -49,7 +36,7 @@ def process_file(settings, file_path):
         os.mkdir(new_dir)
     shutil.copy(file_path, new_dir + "/index.md")
 
-    update_links(new_dir + "/index.md")
+    update_links(settings, new_dir + "/index.md")
 
 
 def get_files(settings: Settings):
