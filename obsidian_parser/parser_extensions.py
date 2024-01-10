@@ -6,10 +6,9 @@ from marko.inline import InlineElement
 from marko.helpers import MarkoExtension
 import re
 from helpers import slugify_filename
+import os
+import shutil
 
-
-#print(dir(marko))
-#print(dir(marko.md_renderer))
 
 class ObsidianWiki(InlineElement):
     """WikiLink: [[FileName]]"""
@@ -18,29 +17,11 @@ class ObsidianWiki(InlineElement):
     parse_children = True
 
     def __init__(self, match):
-        print("Ob Link: ", match)
         self.target = match.group(1)
 
 
 class ObsidianWikiRenderer(object):
-    #def __init__(self, settings, source_path, target_path, *args, **kwargs):
-        # def __init__(self, *args, **kwargs):
-        # print(*args)
-        # print(**kwargs)
-        #print(f" Args: {args}")
-        #print(f" Kwargs: {kwargs}")
-        # super().__init__(*args, **kwargs)
-        # self._settings = settings
-        # self._source_path = source_path
-        # self._target_path = target_path
-        #self._settings = kwargs["settings"]
-        #self._source_path = kwargs["source_path"]
-        #self._target_path = kwargs["target_path"]
-
     def render_obsidian_wiki(self, element):
-        #print(self._settings)
-        #print(self._source_path)
-        #print(self._target_path)
         return "[{}]({})".format(element.target, element.target)
 
 
@@ -55,15 +36,7 @@ class ObsidianImage(InlineElement):
 
 
 class ObsidianImageRenderer(object):
-    #def __init__(self, settings, source_path, target_path):
-        #self._settings = settings
-        #self._source_path = source_path
-        #self._target_path = target_path
-
     def render_obsidian_image(self, element):
-        #print(self._settings)
-        #print(self._source_path)
-        #print(self._target_path)
         return "[{}]({})".format(element.target, element.target)
 
 
@@ -126,53 +99,40 @@ class ObsidianExtension(MarkoExtension):
 
 def create_extension(settings, source_path, target_path):
     return MarkoExtension(
-        elements=[
-            FrontMatter,
-            ObsidianWiki,
-            ObsidianImage
-        ],
-        #renderer_mixins=[
-        #    FrontMatterRenderer,
-        #    ObsidianWikiRenderer(
-        #        settings=settings, source_path=source_path, target_path=target_path
-        #    ),
-        #    # ObsidianWikiRenderer,
-        #    # ObsidianWikiRenderer,
-        #    # ObsidianImageRenderer(settings, source_path, target_path),
-        #],
+        elements=[FrontMatter, ObsidianWiki, ObsidianImage],
     )
 
+
 class ObsidianRenderer(marko.md_renderer.MarkdownRenderer):
-    #def __init__(self, settings, source_path, target_path, *args, **kwargs):
     file_data = {}
 
     def __init__(self):
-        #print(f" Args: {args}")
-        #print(f" Kwargs: {kwargs}")
         super().__init__()
-        #self._settings = settings
-        #self._source_path = source_path
-        #self._target_path = target_path
-        print("Loaded")
 
     def render_obsidian_wiki(self, element):
-        print(self.file_data.get("settings"))
-        print(self.file_data.get("source_path"))
-        print(self.file_data.get("target_path"))
-        #print(self._settings)
-        #print(self._source_path)
-        #print(self._target_path)
-        return "[{}]({})".format(element.target, element.target)
-
+        settings = self.file_data.get("settings")
+        target_path = self.file_data.get("target_path")
+        fp = os.path.split(target_path)
+        return "[{}]({})".format(
+            element.target, settings.linkBase + slugify_filename(element.target)
+        )
 
     def render_obsidian_image(self, element):
-        print(self.file_data.get("settings"))
-        print(self.file_data.get("source_path"))
-        print(self.file_data.get("target_path"))
-        #print(self._settings)
-        #print(self._source_path)
-        #print(self._target_path)
-        return "[{}]({})".format(element.target, element.target)
+        settings = self.file_data.get("settings")
+        target_path = self.file_data.get("target_path")
+        fp = os.path.split(target_path)
+        shutil.copy(
+            os.path.expanduser(os.path.expandvars(settings.vaultRoot + element.target)),
+            slugify_filename(
+                os.path.expanduser(
+                    os.path.expandvars(settings.assetOutput + element.target)
+                )
+            ),
+        )
+        return "![{}]({})".format(
+            element.target.split(".")[0],
+            slugify_filename(settings.assetBase + element.target),
+        )
 
     def render_front_matter(self, element):
         return "---\n{}---\n".format(element.content)

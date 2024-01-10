@@ -7,6 +7,9 @@ class Settings:
     vaultRoot: str
     vaultDirectory: str
     outDirectory: str
+    linkBase: str
+    assetBase: str
+    assetOutput: str
 
 
 def parse_settings(file: str):

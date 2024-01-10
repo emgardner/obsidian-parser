@@ -6,27 +6,24 @@ import re
 from parser_extensions import ObsidianRenderer, create_extension, ObsidianExtension
 from helpers import slugify_filename
 from settings import Settings, parse_settings
+import sys
 
 
-def update_links(settings: Settings, filepath: str):
+def update_links(settings: Settings, source_path: str, target_path: str):
     ObsidianRenderer.file_data = {
-        "settings": Settings,
-        "source_path": filepath,
-        "target_path": filepath,
+        "settings": settings,
+        "source_path": source_path,
+        "target_path": target_path,
     }
     _mdParser = marko.Markdown(
-        #renderer=marko.md_renderer.MarkdownRenderer,
-        #renderer=ObsidianRenderer(settings, filepath, filepath),
         renderer=ObsidianRenderer,
-        extensions=[create_extension(settings, filepath, filepath)],
-        #extensions=[ObsidianExtension()],
+        extensions=[create_extension(settings, source_path, target_path)],
     )
     content = ""
-    with open(filepath) as f:
+    with open(source_path) as f:
         content = f.read()
-    # document = marko.parse(content)
     document = _mdParser.parse(content)
-    with open(filepath, "w+") as f:
+    with open(target_path, "w+") as f:
         f.write(_mdParser.render(document))
 
 
@@ -41,9 +38,7 @@ def process_file(settings, file_path):
         pass
     else:
         os.mkdir(new_dir)
-    shutil.copy(file_path, new_dir + "/index.md")
-
-    update_links(settings, new_dir + "/index.md")
+    update_links(settings, file_path, new_dir + "/index.md")
 
 
 def get_files(settings: Settings):
@@ -56,9 +51,10 @@ def get_files(settings: Settings):
     if output == base:
         raise Exception("outputDirectory and vault must be different")
     if os.path.exists(output):
-        pass
-        #    os.rmdir(output)
-        #    os.mkdir(output)
+        # pass
+        shutil.rmtree(output)
+        # os.rmdir(output)
+        os.mkdir(output)
     else:
         os.mkdir(output)
     for root, dirs, files in os.walk(base):
@@ -70,6 +66,8 @@ def get_files(settings: Settings):
 
 
 if __name__ == "__main__":
-    #settings = parse_settings("./settings.json")
-    settings = parse_settings("./settings.dev.json")
+    settings_file = "settings.json"
+    if len(sys.argv) >= 2:
+        settings_file = sys.argv[1]
+    settings = parse_settings(settings_file)
     get_files(settings)
