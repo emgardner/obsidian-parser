@@ -122,7 +122,11 @@ class ObsidianRenderer(marko.md_renderer.MarkdownRenderer):
         target_path = self.file_data.get("target_path")
         fp = os.path.split(target_path)
         shutil.copy(
-            os.path.expanduser(os.path.expandvars(settings.vaultRoot + element.target)),
+            os.path.expanduser(
+                os.path.expandvars(
+                    settings.vaultRoot + settings.imageDirectory + element.target
+                )
+            ),
             slugify_filename(
                 os.path.expanduser(
                     os.path.expandvars(settings.assetOutput + element.target)
