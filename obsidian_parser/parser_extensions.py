@@ -8,6 +8,13 @@ import re
 from helpers import slugify_filename
 import os
 import shutil
+import glob
+from settings import Settings
+
+
+def find_file(settings: Settings, file_path: str) -> str:
+    print(settings.vaultDirectory + "/**/" + file_path)
+    print(glob.glob(settings.vaultDirectory + "/**/" + file_path, recursive=True))
 
 
 class ObsidianWiki(InlineElement):
@@ -120,18 +127,23 @@ class ObsidianRenderer(marko.md_renderer.MarkdownRenderer):
     def render_obsidian_image(self, element):
         settings = self.file_data.get("settings")
         target_path = self.file_data.get("target_path")
+        source_path = self.file_data.get("source_path")
+        print(source_path)
         fp = os.path.split(target_path)
+        # find_file(settings, target_path)
         shutil.copy(
-            os.path.expanduser(
-                os.path.expandvars(
-                    settings.vaultRoot + settings.imageDirectory + element.target
-                )
-            ),
-            slugify_filename(
-                os.path.expanduser(
-                    os.path.expandvars(settings.assetOutput + element.target)
-                )
-            ),
+            settings.vaultRoot + settings.imageDirectory + element.target,
+            # os.path.expanduser(
+            #    os.path.expandvars(
+            #        settings.vaultRoot + settings.imageDirectory + element.target
+            #    )
+            # ),
+            # slugify_filename(
+            #    os.path.expanduser(
+            #        os.path.expandvars(settings.assetOutput + element.target)
+            #    )
+            # ),
+            settings.assetOutput + element.target,
         )
         return "![{}]({})".format(
             element.target.split(".")[0],

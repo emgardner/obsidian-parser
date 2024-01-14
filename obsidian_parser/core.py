@@ -26,10 +26,7 @@ def update_links(settings: Settings, source_path: str, target_path: str):
 
 
 def process_file(settings, file_path):
-    print(file_path)
-    output = os.path.abspath(
-        os.path.expanduser(os.path.expandvars(settings.outDirectory))
-    )
+    output = settings.outDirectory
     fp = os.path.split(file_path)
     new_dir_name = slugify_filename(fp[1].split(".")[0])
     new_dir = output + "/" + new_dir_name
@@ -41,12 +38,8 @@ def process_file(settings, file_path):
 
 
 def get_files(settings: Settings):
-    base = os.path.abspath(
-        os.path.expanduser(os.path.expandvars(settings.vaultDirectory))
-    )
-    output = os.path.abspath(
-        os.path.expanduser(os.path.expandvars(settings.outDirectory))
-    )
+    base = settings.vaultDirectory
+    output = settings.outDirectory
     if output == base:
         raise Exception("outputDirectory and vault must be different")
     if os.path.exists(output):
