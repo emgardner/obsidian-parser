@@ -27,13 +27,16 @@ def update_links(settings: Settings, source_path: str, target_path: str):
 
 def process_file(settings, file_path):
     output = settings.outDirectory
-    fp = os.path.split(file_path)
-    new_dir_name = slugify_filename(fp[1].split(".")[0])
-    new_dir = output + "/" + new_dir_name
-    if os.path.exists(new_dir):
-        pass
-    else:
-        os.mkdir(new_dir)
+    rel_dir = file_path.split(settings.vaultDirectory)
+    new_path = slugify_filename(rel_dir[1].split(".")[0])
+    new_dir = output
+    for directory in new_path.split("/"):
+        if len(directory):
+            new_dir += "/" + directory
+            if os.path.exists(new_dir):
+                pass
+            else:
+                os.mkdir(new_dir)
     update_links(settings, file_path, new_dir + "/index.md")
 
 
@@ -52,5 +55,3 @@ def get_files(settings: Settings):
         for name in files:
             filepath = os.path.join(root, name)
             process_file(settings, filepath)
-        # for name in dirs:
-        #    print(os.path.join(root, name))

@@ -1,7 +1,7 @@
 {
   "vaultRoot": "~/Documents/ethans-vault/",
   "vaultDirectory": "~/Documents/ethans-vault/ethans-blog/",
-  "outDirectory": "~/projects/ethans-blog/client/src/content/obsidian/",
+  "outDirectory": "~/projects/ethans-blog/client/src/content/",
   "imageDirectory": "/attachments/",
   "linkBase": "/blog/",
   "assetBase": "/assets/obsidian/",

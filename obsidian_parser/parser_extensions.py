@@ -13,8 +13,15 @@ from settings import Settings
 
 
 def find_file(settings: Settings, file_path: str) -> str:
-    print(settings.vaultDirectory + "/**/" + file_path)
-    print(glob.glob(settings.vaultDirectory + "/**/" + file_path, recursive=True))
+    search_glob = settings.vaultDirectory + "/**/" + file_path + ".md"
+    # print(search_glob)
+    matches = glob.glob(search_glob, recursive=True)
+    if len(matches):
+        return slugify_filename(
+            matches[0].split(settings.vaultDirectory)[1].split(".")[0]
+        )
+    else:
+        raise Exception("Invalid Link")
 
 
 class ObsidianWiki(InlineElement):
@@ -118,19 +125,19 @@ class ObsidianRenderer(marko.md_renderer.MarkdownRenderer):
 
     def render_obsidian_wiki(self, element):
         settings = self.file_data.get("settings")
-        target_path = self.file_data.get("target_path")
-        fp = os.path.split(target_path)
+        new_link = find_file(settings, element.target)
+        # print(new_link)
+        # print(settings.linkBase + slugify_filename(element.target))
         return "[{}]({})".format(
-            element.target, settings.linkBase + slugify_filename(element.target)
+            # element.target, settings.linkBase + slugify_filename(element.target)
+            element.target,
+            new_link,
         )
 
     def render_obsidian_image(self, element):
         settings = self.file_data.get("settings")
         target_path = self.file_data.get("target_path")
-        source_path = self.file_data.get("source_path")
-        print(source_path)
         fp = os.path.split(target_path)
-        # find_file(settings, target_path)
         shutil.copy(
             settings.vaultRoot + settings.imageDirectory + element.target,
             # os.path.expanduser(
